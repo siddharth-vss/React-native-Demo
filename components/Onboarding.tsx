@@ -2,11 +2,12 @@ import { Alert, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View }
 import React, { useRef, useState } from 'react'
 import slider from '../slider'
 import OnboardingItem from './OnboardingItem'
+import { NavigationProp } from '@react-navigation/native';
 
 // import AppIntroSlider from 'react-native-app-intro-slider';
 
 const { width } = Dimensions.get('window');
-const Onboarding = () => {
+const Onboarding = ({navigation }: {navigation : NavigationProp<any>}) => {
 
     // const scrollX = useSharedValue(0);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -23,8 +24,7 @@ const Onboarding = () => {
     };
 
     const handleDone = () => {
-        // Handle the "Done" action (e.g., navigate to the main app screen)
-        console.log('Walkthrough completed');
+        navigation.navigate('Login');
     };
 
 
@@ -61,7 +61,7 @@ const Onboarding = () => {
             <View style={styles.bottomContainer}>
                 {currentIndex < slider.length - 1 ? (
                     <TouchableOpacity onPress={handleSkip}>
-                        <Text style={styles.buttonText}>Skip</Text>
+                        <Text style={styles.buttonText}>Next</Text>
                     </TouchableOpacity>
                 ) : (
                     <TouchableOpacity onPress={handleDone}>
