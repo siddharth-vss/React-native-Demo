@@ -2,19 +2,19 @@ export default [
     {
         id:'1',
         title: 'one ',
-        discription:"hello im Fine",
+        discription:"Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
         image:require("./assets/1.png"),
     },
     {
         id:'2',
         title: 'two',
-        discription:"",
+        discription:"Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
         image:require("./assets/2.png"),
     },
     {
         id:'3',
         title: 'three',
-        discription:"",
+        discription:"Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
         image:require("./assets/3.png"),
     }  
 
