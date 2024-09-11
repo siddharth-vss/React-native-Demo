@@ -25,7 +25,11 @@ const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
       Alert.alert('Error', 'Please fill in all fields');
     } else {
       const data = await register(username,password)
-      console.log('hi',data.data);
+      await AsyncStorage.setItem(
+        'Token',
+        data.data.access_token,
+      );
+      navigation.navigate('Dashboard');
     }
   };
 
