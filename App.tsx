@@ -5,7 +5,7 @@ import { NavigationContainer, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Onboarding from './components/Onboarding'
-import { Login, Register } from './Page';
+import { Login, Register ,Dashboard } from './Page';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +35,7 @@ const App = () => {
         <Stack.Screen name="Home" options={{ headerShown: false }} component={Home} />
         <Stack.Screen name="Login" options={{ headerShown: false }} component={Login} />
         <Stack.Screen name="Register" options={{ headerShown: false }} component={Register} />
+        <Stack.Screen name="Dashboard" options={{ headerShown: false }} component={Dashboard} />
 
       </Stack.Navigator>
     </NavigationContainer>

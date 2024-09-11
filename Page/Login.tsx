@@ -1,30 +1,38 @@
 import { NavigationProp } from '@react-navigation/native';
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { login } from './services/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Login = ({navigation }: {navigation : NavigationProp<any>}) => {
+const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-
-
+ 
   const handleRegister = () => {
     Alert.alert('Register', 'Navigate to Register Page');
     navigation.navigate('Register');
-
+    
   };
-
+  
   const handleForgotPassword = () => {
     Alert.alert('Forgot Password', 'Navigate to Forgot Password Page');
   };
-
-  const handleSubmit = () => {
+  
+  const handleSubmit = async () => {
     // Basic validation
-    if ( !email || !password) {
+    if (!username || !password) {
       Alert.alert('Error', 'Please fill in all fields');
     } else {
-      Alert.alert('Success', `Welcome, ${email}!`);
+      const data = await login(username, password)
+      console.log('hi', data.data.access_token);
+      
+      await AsyncStorage.setItem(
+        'Token',
+        data.data.access_token,
+      );
+      navigation.navigate('Dashboard');
     }
   };
 
@@ -35,9 +43,8 @@ const Login = ({navigation }: {navigation : NavigationProp<any>}) => {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-        keyboardType="email-address"
+        value={username}
+        onChangeText={(text) => setUsername(text)}
       />
 
       <TextInput
@@ -77,10 +84,9 @@ const Login = ({navigation }: {navigation : NavigationProp<any>}) => {
 
       </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
-        </TouchableOpacity>
-        
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit</Text>
+      </TouchableOpacity>
     </View>
   );
 };

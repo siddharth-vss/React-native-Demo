@@ -1,11 +1,14 @@
 import { NavigationProp } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { register } from './services/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [dp, setdp] = useState(false);
 
 
 
@@ -16,12 +19,13 @@ const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
   };
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     // Basic validation
-    if (!name || !email || !password) {
+    if ( !username || !password) {
       Alert.alert('Error', 'Please fill in all fields');
     } else {
-      Alert.alert('Success', `Welcome, ${name}!`);
+      const data = await register(username,password)
+      console.log('hi',data.data);
     }
   };
 
@@ -29,19 +33,13 @@ const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
     <View style={styles.container}>
       <Text style={styles.header}>Sign Up</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={(text) => setName(text)}
-      />
+
 
       <TextInput
         style={styles.input}
         placeholder="Email"
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-        keyboardType="email-address"
+        value={username}
+        onChangeText={(text) => setUsername(text)}
       />
 
       <TextInput
