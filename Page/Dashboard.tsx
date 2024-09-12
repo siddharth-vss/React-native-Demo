@@ -11,33 +11,43 @@ import React, { useEffect, useRef, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-
+import { RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import { io, Socket } from "socket.io-client";
+import Video from 'react-native-video';
+import { RTCSessionDescriptionInit } from 'react-native-webrtc/lib/typescript/RTCSessionDescription';
 
 
 const Dashboard = () => {
 
+  
+
+ 
   // const { hasPermission, requestPermission } = useMicrophonePermission()
   // const { hasPermission, requestPermission } = useCameraPermission()
 
   // const [hasPermission, setHasPermission] = useState(false);
-  const device = useCameraDevice('back')
+  const device = useCameraDevice('front')
   const { hasPermission } = useCameraPermission()
   // const device = devices.back;
 
   const camera = useRef<Camera>(null)
   const [dp, setdp] = useState(false);
   const [token, settoken] = useState('');
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  const pcRef = useRef<RTCPeerConnection>();
 
 
-  const capture =  async()=>{
 
-    const photo = await camera?.current?.takePhoto({
-      flash: 'on' // 'auto' | 'off'
-    })
+ 
 
-    console.log(photo);
-  
-  }
+const capture =  async()=>{
+ 
+
+  const offer = await pcRef.current?.createOffer({});
+  await pcRef.current?.setLocalDescription(offer);
+  socket?.emit('offer', offer);
+}
 
   useEffect(() => {
     const getPermissions = async () => {
@@ -63,7 +73,48 @@ const Dashboard = () => {
       setdp(true)
       if (value !== null) {
         // We have data!!
-        console.log(value);
+        const socket = io("https://chatboat.koyeb.app", {
+          reconnectionDelayMax: 10000,
+          auth: {token : token},
+
+        });
+
+        console.log(socket,'l',value)
+        setSocket(socket);
+        
+        pcRef.current = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        });
+    
+        // pcRef.current.onicecandidate = (event : any) => {
+        //   if (event.candidate) {
+        //     socket.emit('ice-candidate', event.candidate);
+        //   }
+        // };
+    
+        // pcRef.current.ontrack = (event : any) => {
+        //   setRemoteStream(event.streams[0]);
+        // };
+    
+        socket.on('offer', async (data) => {
+          await pcRef.current?.setRemoteDescription(new RTCSessionDescription(data));
+          const answer = await pcRef.current?.createAnswer();
+          await pcRef.current?.setLocalDescription(answer);
+          socket.emit('answer', answer);
+          console.log('socket offer fronted', answer)
+        });
+    
+        socket.on('answer', async (data) => {
+          await pcRef.current?.setRemoteDescription(new RTCSessionDescription(data));
+        });
+    
+        socket.on('ice-candidate', async (data) => {
+          try {
+            await pcRef.current?.addIceCandidate(new RTCIceCandidate(data));
+          } catch (e) {
+            console.error('Error adding received ice candidate', e);
+          }
+        });
       }
     };
 
@@ -76,7 +127,7 @@ const Dashboard = () => {
     <View style={styles.container}>
       {hasPermission ? (
         <Camera
-          style={StyleSheet.absoluteFill}
+          style={StyleSheet.absoluteFillObject}
           device={device}
           isActive={true}
         />
@@ -89,6 +140,7 @@ const Dashboard = () => {
       <TouchableOpacity onPress={capture} style={styles.captureButton}>
         <Text style={styles.buttonText}>Capture</Text>
       </TouchableOpacity>
+      
     </View>
   )
 }
@@ -112,6 +164,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
+  },
+  video:{
+    position:"absolute",
+    width: 300,
+    height: 300,
+    flex : 0.5,
+    // backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',

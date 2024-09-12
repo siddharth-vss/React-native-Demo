@@ -32,7 +32,8 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         'Token',
         data.data.access_token,
       );
-      navigation.navigate('Dashboard');
+      // navigation.navigate('Dashboard');
+      navigation.navigate('GPT');
     }
   };
 
