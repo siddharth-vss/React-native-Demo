@@ -24,12 +24,10 @@ const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
     if ( !username || !password) {
       Alert.alert('Error', 'Please fill in all fields');
     } else {
-      const data = await register(username,password)
-      await AsyncStorage.setItem(
-        'Token',
-        data.data.access_token,
-      );
-      navigation.navigate('Dashboard');
+      console.log(username,password)
+      const data = await register(username,password);
+
+      navigation.navigate('Login');
     }
   };
 
@@ -41,7 +39,7 @@ const Register  = ({navigation }: {navigation : NavigationProp<any>}) => {
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Username"
         value={username}
         onChangeText={(text) => setUsername(text)}
       />
