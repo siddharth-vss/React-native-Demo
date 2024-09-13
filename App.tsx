@@ -5,7 +5,8 @@ import { NavigationContainer, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Onboarding from './components/Onboarding'
-import { Login, Register ,Dashboard, GPT } from './Page';
+import { Login, Register, Dashboard, GPT } from './Page';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator();
 
@@ -45,7 +46,29 @@ const App = () => {
 
 export default App
 
-const Home = ({navigation }: {navigation : NavigationProp<any>}) => {
+const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
+
+  const [token, setToken] = useState('');
+
+
+  useEffect(() => {
+
+    const getdata = async () => {
+      const value = await AsyncStorage.getItem('Token');
+      setToken(value ?? 'no token');
+
+
+      if (value !== null) {
+          navigation.navigate('Dashboard');
+      }
+    }
+
+    return () => {
+      getdata();
+    }
+  }, [token])
+
+  // settoken(value ?? 'no token');
   return (
     <View style={styles.container}>
 
