@@ -1,95 +1,165 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
-import { RTCPeerConnection, mediaDevices, RTCView, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
-import io from 'socket.io-client';
+// import React, { useState, useRef, useEffect } from 'react';
+// import { View, Button, StyleSheet, Text, Alert } from 'react-native';
+// import { RTCPeerConnection, RTCSessionDescription, RTCIceCandidate, MediaStream, RTCView } from 'react-native-webrtc';
+// import io from 'socket.io-client';
 
-export default function App() {
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
-  const peerConnection = useRef(new RTCPeerConnection());
+// const socket = io('http://localhost:3000/');
+
+// const App = () => {
+//   const [localStream, setLocalStream] = useState(null);
+//   const [remoteStream, setRemoteStream] = useState(null);
+//   const [peerConnection, setPeerConnection] = useState(null);
+//   const localStreamRef = useRef();
+//   const remoteStreamRef = useRef();
+
+//   useEffect(() => {
+//     const setupWebRTC = async () => {
+//       // const stream = await getUserMedia();
+//       // setLocalStream(stream);
+//       // localStreamRef.current.srcObject = stream;
+
+//       // const pc = new RTCPeerConnection();
+//       // setPeerConnection(pc);
+
+//       // pc.onicecandidate = (event) => {
+//       //   if (event.candidate) {
+//       //     socket.emit('ice-candidate', event.candidate);
+//       //   }
+//       // };
+
+//       // pc.ontrack = (event) => {
+//       //   setRemoteStream(event.streams[0]);
+//       //   remoteStreamRef.current.srcObject = event.streams[0];
+//       // };
+
+//       // socket.on('offer', async (offer) => {
+//       //   await pc.setRemoteDescription(new RTCSessionDescription(offer));
+//       //   const answer = await pc.createAnswer();
+//       //   await pc.setLocalDescription(answer);
+//       //   socket.emit('answer', answer);
+//       // });
+
+//       // socket.on('answer', async (answer) => {
+//       //   await pc.setRemoteDescription(new RTCSessionDescription(answer));
+//       // });
+//       console.log(socket)
+
+//       // socket.on('ice-candidate', async (candidate) => {
+//       //   await pc.addIceCandidate(new RTCIceCandidate(candidate));
+//       // });
+//       socket.emit('message', 'Hello World');
+//       Alert.alert('hii','fine');
+
+//       socket.on('broadcast', (data) => {
+//         Alert.alert(data.message);
+//       });
+//     };
+
+//     setupWebRTC();
+
+//     // return () => {
+//       // if (localStream) localStream.release();
+//       // if (peerConnection) peerConnection.close();
+//     // };
+
+//   // }, [localStream]);
+
+//   });
+
+//   // const getUserMedia = async () => {
+//   //   const stream = await navigator.mediaDevices.getUserMedia({
+//   //     video: true,
+//   //     audio: true
+//   //   });
+//   //   return stream;
+//   // };
+
+//   // const startCall = async () => {
+//   //   const offer = await peerConnection?.createOffer();
+//   //   await peerConnection?.setLocalDescription(offer);
+//   //   socket.emit('offer', offer);
+//   // };
+
+//   return (
+//     <View>
+//       <Text>Hello</Text>
+
+//     </View>
+//     // <View style={styles.container}>
+//     //   <Text>Local Stream</Text>
+//     //   <View style={styles.streamContainer}>
+//     //     <RTCView
+//     //       streamURL={localStream ? localStream.toURL() : ''}
+//     //       style={styles.stream}
+//     //       ref={localStreamRef}
+//     //     />
+//     //   </View>
+//     //   <Text>Remote Stream</Text>
+//     //   <View style={styles.streamContainer}>
+//     //     <RTCView
+//     //       streamURL={remoteStream ? remoteStream.toURL() : ''}
+//     //       style={styles.stream}
+//     //       ref={remoteStreamRef}
+//     //     />
+//     //   </View>
+//     //   <Button title="Start Call" onPress={startCall} />
+//     // </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center'
+//   },
+//   streamContainer: {
+//     width: '100%',
+//     height: '50%',
+//     backgroundColor: 'black'
+//   },
+//   stream: {
+//     width: '100%',
+//     height: '100%'
+//   }
+// });
+
+// export default App;
+
+
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
+import { io, Socket } from 'socket.io-client';
+
+const SOCKET_SERVER_URL = 'http://192.168.0.120:3000'; // or your server URL
+
+const App = () => {
+  const [message, setMessage] = useState<string | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io('https://chatboat.koyeb.app');
-
-function startCall() {
-  peerConnection.current.createOffer({}).then(offer => {
-    peerConnection.current.setLocalDescription(offer);
-    socket.emit('offer', offer);
-  });
-
-  socket.on('offer', offer => {
-    peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-    peerConnection.current.createAnswer().then(answer => {
-      peerConnection.current.setLocalDescription(answer);
-      socket.emit('answer', answer);
-    });
-  });
-
-  socket.on('answer', answer => {
-    peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-  });
-
-  socket.on('candidate', candidate => {
-    peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
-  });
-
-  peerConnection.current.onicecandidate = event => {
-    if (event.candidate) {
-      socket.emit('candidate', event.candidate);
-    }
-  };
-}
-    // Get the media devices for video
-    mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    }).then(stream => {
-      setLocalStream(stream);
-      peerConnection.current.addStream(stream);
+    // Connect to the Socket.IO server
+    const newSocket = io(SOCKET_SERVER_URL);
+    newSocket.emit("broadcast","HELLO WOLRD");
+    // Listen for "message" event from server
+    newSocket.on('broadcast', (msg: string) => {
+      setMessage(msg);
     });
 
-    // Handle receiving remote stream
-    peerConnection.current.onaddstream = event => {
-      setRemoteStream(event.stream);
-    };
+    // Save the socket instance
+    setSocket(newSocket);
 
-    // Clean up the stream
+    // Clean up the connection on component unmount
     return () => {
-      localStream && localStream.release();
-      peerConnection.current && peerConnection.current.close();
+      newSocket.disconnect();
     };
   }, []);
 
   return (
-    <View style={styles.container}>
-      {localStream && <RTCView streamURL={localStream.toURL()} style={styles.video} />}
-      {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={styles.video} />}
-      <Button title="Start Call" onPress={startCall} />
-      <Button title="End Call" onPress={endCall} />
+    <View>
+      <Text>Message from server: {message}</Text>
     </View>
   );
+};
 
-  function startCall() {
-    // Implement WebRTC signaling here (send offer/answer via signaling server)
-  }
-
-  function endCall() {
-    peerConnection.current.close();
-    setRemoteStream(null);
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  video: {
-    width: 200,
-    height: 200,
-    backgroundColor: 'black',
-  },
-});
-
-
+export default App;
