@@ -26,7 +26,8 @@ const Dashboard = () => {
   // const { hasPermission, requestPermission } = useCameraPermission()
 
   // const [hasPermission, setHasPermission] = useState(false);
-  const device = useCameraDevice('front')
+  const device = useCameraDevice('back',{ physicalDevices: ['ultra-wide-angle-camera']})
+  // const device = useCameraDevice('front')
   const { hasPermission } = useCameraPermission()
   // const device = devices.back;
 
@@ -54,7 +55,7 @@ const capture =  async()=>{
       const status = await Camera.requestCameraPermission();
       if (!hasPermission) return requestCameraPermission()
       if (device == null) return Alert.alert('Permission denied', 'Camera permission is required to use this feature.');
-
+      console.log(device)
     };
     getPermissions();
   }, []);
@@ -67,6 +68,8 @@ const capture =  async()=>{
   // requestCameraPermission();
 
   useEffect(() => {
+    console.log(device)
+
     const getData = async () => {
       const value = await AsyncStorage.getItem('Token');
       settoken(value ?? 'no token');
@@ -79,7 +82,7 @@ const capture =  async()=>{
 
         });
 
-        console.log(socket,'l',value)
+        console.log(camera);
         setSocket(socket);
         
         pcRef.current = new RTCPeerConnection({
@@ -125,7 +128,7 @@ const capture =  async()=>{
   }, [dp, token]);
   return (
     <View style={styles.container}>
-      {hasPermission ? (
+      {hasPermission  && token? (
         <Camera
           style={StyleSheet.absoluteFillObject}
           device={device}
